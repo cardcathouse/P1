@@ -1,6 +1,6 @@
 # Lista doblemente ligada en Rust
 
-Este documento explicará las políticas de propiedad y mutabilidad utilizadas en la implementación de una lista doblemente ligada en Rust, como se vé en el archivo doubleLinkedListRustExample.rs del repositorio.
+Este documento explicará las políticas de propiedad y mutabilidad utilizadas en la implementación de una lista doblemente ligada en Rust, como se vé en el archivo [doubleLinkedListRustExample.rs](doubleLinkedListRustExample.rs) del repositorio.
 
 Primero, explicaremos algunos conceptos básicos que ayudarán a entender mejor el resto del documento.
 ### Propiedad

@@ -42,12 +42,28 @@ Si tenemos un ciclo de referencias, corremos el riesgo de una fuga de memoria, e
 
 Recordando las características del sistema de propiedad, podemos ver que esto es en definitiva un problema. Afortunadamente podemos arreglarlo utilizando **apuntadores inteligentes** y **referencias débiles**. Así, podemos generar la estructura de la lista a la vez que nos aseguramos que estamos utilizando la memoria conforme los estándares de Rust.
 
-#### Apuntadores inteligentes: `Rc<T>` y `RefCell<T>`
+#### Apuntadores inteligentes: `Rc<T>`, `RefCell<T>` y `Weak<T>`
 
 Para implementar la lista y sus operaciones, necesitamos que un nodo tenga referencias a los nodos a sus lados, y que todos ellos puedan modificar las referencias que usan para saber quiénes están a su alrededor en todo momento. Cuando eliminamos un nodo, debemos de actualizar las referencias relacionadas para mostrar ese cambio. 
 
 En términos del sistema de propiedad, lo podemos ver de la siguiente manera: cada nodo tiene un dueño, pero además, los nodos que están a su alrededor también necesitan ser dueños de él para saber que esta ahí y poder acceder a su dato. Podríamos conseguir esto por medio de referencias, pero las referencias normales de Rust tienen limitantes que no permitirían esto. Para sobrepasar esto, haremos uso de los apuntadores inteligentes `Rc<T>` y `RefCell<T>`
 
-`Rc<T>` o Apuntador de referencias contadas nos permite que un valor tenga múltiples dueños. Esto es útil cuando queremos compartir un valor entre múltiples variables, pero no sabemos cuál de todas será la última en hacerlo. Utilizándolo en conjunto con la función `clone`, creamos un nuevo apuntador a la misma región en el *heap* en donde se encuentra nuestra dato a compartir. Cada vez que creemos un nuevo apuntador, incrementamos un contador interno que indica cuántos apuntadores en total están compartiendo propiedad del dato. Cuando todos los apuntadores terminan de usar el dato (salen de su ámbito y son destruidos), el valor se quita y se libera la memoria.
+`Rc<T>` o Apuntador de referencias contadas es una estructura que nos permite que un valor tenga múltiples dueños. Esto es útil cuando queremos compartir un valor entre múltiples variables, pero no sabemos cuál de todas será la última en hacerlo. Utilizándolo en conjunto con la función `clone`, creamos un nuevo apuntador a la misma región en el *heap* en donde se encuentra nuestra dato a compartir.
 
-Esta función nos es útil para la lista porque nos permite que los nodos puedan tener referencias de aquellos que están a su alrededor. 
+Cada vez que creemos un nuevo apuntador, incrementamos un contador interno que indica cuántos apuntadores en total están compartiendo propiedad del dato. Cuando todos los apuntadores terminan de usar el dato (salen de su ámbito y son destruidos), el valor se quita y se libera la memoria. Esta función nos es útil para la lista porque nos permite que los nodos puedan tener referencias de aquellos que están a su alrededor. 
+
+Si usaramos, por ejemplo, `Box<T>` para crear los nodos en la lista, tendríamos el problema de que la propiedad de los nodos se movería entre ellos cada vez que agregaramos uno nuevo y actualizaramos las referencias.
+
+En cambio, al hacer al nodo del tipo `Rc<T>` y usar `clone` en los nodos que necesitan tener referencia de él, podemos cumplir con las reglas de propiedad y con las características de una lista ligada.
+
+Ya pudimos crear la estructura básica de la lista ligada. Sin embargo, llegará el punto en el que tengamos que añadir o eliminar nodos y, por lo tanto, cambiar referencias. `Rc<T>` se apega a las reglas de mutabilidad de Rust, por lo que no podemos modificar los elementos de la lista por defecto. Para solucionar eso, usaremos la estructura `RefCell<T>`.
+
+`RefCell<T>` es una estructura que trabaja con el patrón de diseño de mutabilidad interior, el cuál permite mutar valores aunque este tenga referencias inmutables. El método `borrow_mut()` nos permitirá pedir prestado los valores por medio de referencias mutables. Este método también lleva un contador de las referencias que se le hacen a un valor. Adicionalmente, contiene métodos que dereferencian automáticamente para evtar conflictos de propiedad. 
+
+Nuestros nodos usaran ambas estructuras para tener nodos mutables con múltiples dueños. De esta forma, podremos realizar todas las operaciones de la lista que requieran manipular los nodos y sus referencias.
+
+Aunque con estos elementos ya podríamos comenzar a implementar la lista, nos falta resolver otro problema: el del ciclo de referencias. Recordemos que si tenemos un ciclo de referencias, corremos el riesgo de no poder liberar la memoria que ocupan. 
+
+Esto sería un problema cuando quisieramos eliminar un nodo en la lista, ya que si nuestros nodos son del tipo `Rc<T>`, no podremos eliminarlos hasta que todas las referencias que sean dueñas de él hayan terminado de usarlo. Rust no se encarga de prevenir esto, por lo que debemos de ocuparnos nosotros de resolverlo usando **referencias débiles**. 
+
+Una referencia débil es aquella que no toma propiedad del objeto al que apunta. En Rust, esto está implementado en el apuntador inteligente `Weak<T>`. Podemos convertir una referencia `Rc<T>`, que es fuerte por defecto para tener posesión sobre un dato, a una débil utilizando la instrucción `Rc::downgrade`. Así, podemos eliminar nodos sin importar las condiciones en las que se encuentre.

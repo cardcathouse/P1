@@ -14,3 +14,4 @@ Podemos evitar este problema utilizando el concepto de préstamo. Utilizando ref
 Cualquier préstamo no debe tener un ámbito mayor que el de su variable dueña
 Sólo se puede tener un tipo de préstamo a la vez: o una o más referencias inmutables o sólo una referencia mutable.
 La primera sirve para asegurarnos que la administración de propiedad de los datos se maneje correctamente, es decir, que se regresa la propiedad a su dueña cuando quién la pidió prestada la termine de utilizar. La segunda regla nos ayuda a evitar condiciones de carrera sobre los datos.
+

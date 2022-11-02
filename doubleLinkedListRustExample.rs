@@ -60,38 +60,49 @@ impl<T:Copy> List<T>{
     pub fn push_back(&mut self, value: T){
         let mut node = Node::new(value);
 
+        //we take ownership value of tail and replace it's value with None
         match &mut self.tail.take(){
             None => {
+                //If list is empty, head and tail are the same
                 self.head = node.into();
-                self.tail = self.head.clone();
+                self.tail = self.head.clone();  //Increments head ref. counter by 1
             }
-            Some(current_tail) => {
+            Some(current_tail) => { //If we already have something in tail
+                //New node's prev. value is weak reference to current tail
                 node.prev = Some(Rc::downgrade(&current_tail));
-                self.tail = node.into();
-                current_tail.borrow_mut().next = self.tail.clone();
+                self.tail = node.into(); //copy new node into tail
+                //assigning new node to be current_tail next node. using borrow_mut to mutuably borrow value of new node
+                current_tail.borrow_mut().next = self.tail.clone(); 
             }
         } 
     }
 
     pub fn pop_back(&mut self) -> Option<T> {
+        //As before, we make tail None
         match &mut self.tail.take() {
+            //if none, return none
             None => None,
             Some(tail) => {
+                //as we don't want tail to have anything before, we borrow_mut tail...
                 let mut tail = tail.borrow_mut();
+                //..and then take it's prev. value
                 let prev = tail.prev.take();
+                //check if prev was head.
                 match prev {
                     None => {
+                        //if prev was head, then head also needs to be None
                         self.head.take();
                     }
                     Some(prev) => {
-                        let prev = prev.upgrade();
+                        //if prev value had something, it's next value should be None
+                        let prev = prev.upgrade(); //upgrading from weak reference
                         if let Some(prev) = prev {
                             prev.borrow_mut().next = None;
                             self.tail = Some(prev);
                         }
                     }
                 };
-                Some(tail.value)
+                Some(tail.value) //return value
             }
         }
     }

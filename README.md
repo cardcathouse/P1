@@ -67,3 +67,5 @@ Aunque con estos elementos ya podríamos comenzar a implementar la lista, nos fa
 Esto sería un problema cuando quisieramos eliminar un nodo en la lista, ya que si nuestros nodos son del tipo `Rc<T>`, no podremos eliminarlos hasta que todas las referencias que sean dueñas de él hayan terminado de usarlo. Rust no se encarga de prevenir esto, por lo que debemos de ocuparnos nosotros de resolverlo usando **referencias débiles**. 
 
 Una referencia débil es aquella que no toma propiedad del objeto al que apunta. En Rust, esto está implementado en el apuntador inteligente `Weak<T>`. Podemos convertir una referencia `Rc<T>`, que es fuerte por defecto para tener posesión sobre un dato, a una débil utilizando la instrucción `Rc::downgrade`. Así, podemos eliminar nodos sin importar las condiciones en las que se encuentre.
+
+test

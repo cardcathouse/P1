@@ -1,4 +1,4 @@
-/*Importando "crate" (biblioteca) env por medio de use, que es la biblioteca estándar de Rust */
+
 use std::env;
 
 /*Función add toma como parametros a y b de tipo u64.
